@@ -41,6 +41,18 @@ export async function getLocationById(id:number): Promise<Location>  {
   }
 }
 
+export async function updateLocation(updatedLocation:Location): Promise<number>  {
+  try {
+    return db('locations')
+      .returning(['id', 'name', 'description'])
+      .update({...updatedLocation})
+      .where('id', updatedLocation.id)
+  } catch (err: any) {
+    console.log(err.message)
+    return err.message
+  }
+}
+
 
 
   // TODO: use knex to get the real location data from the database
