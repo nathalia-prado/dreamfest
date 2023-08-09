@@ -16,10 +16,23 @@ export async function getAllLocations(): Promise<Location[]> {
     console.log(err.message)
     return err.message
   }
+}
   
+  export async function getEventsByDay(day:string): Promise<Event[]>  {
+    try {
+      return db('events')
+        .join('locations', 'events.location_id', 'locations.id')
+        .where('events.day', day)
+        .select()
+    } catch (err: any) {
+      console.log(err.message)
+      return err.message
+    }
+  }
+
 
 
   // TODO: use knex to get the real location data from the database
-}
+
 
 // TODO: write some more database functions
