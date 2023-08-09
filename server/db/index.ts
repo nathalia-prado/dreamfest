@@ -18,17 +18,28 @@ export async function getAllLocations(): Promise<Location[]> {
   }
 }
   
-  export async function getEventsByDay(day:string): Promise<Event[]>  {
-    try {
-      return db('events')
-        .join('locations', 'events.location_id', 'locations.id')
-        .where('events.day', day)
-        .select()
-    } catch (err: any) {
-      console.log(err.message)
-      return err.message
-    }
+export async function getEventsByDay(day:string): Promise<Event[]>  {
+  try {
+    return db('events')
+      .join('locations', 'events.location_id', 'locations.id')
+      .where('events.day', day)
+      .select()
+  } catch (err: any) {
+    console.log(err.message)
+    return err.message
   }
+}
+
+export async function getLocationById(id:number): Promise<Location>  {
+  try {
+    return db('locations')
+      .where('locations.id', id)
+      .first()
+  } catch (err: any) {
+    console.log(err.message)
+    return err.message
+  }
+}
 
 
 

@@ -5,8 +5,8 @@ import * as db from '../db/index.ts'
 const router = express.Router()
 
 // GET /locations
+// TODO: Replace this with all of the locations in the database
 router.get('/', async (req, res, next) => {
-  // TODO: Replace this with all of the locations in the database
   try {
     const locations = await db.getAllLocations()
     const viewData = { locations }  
@@ -17,18 +17,15 @@ router.get('/', async (req, res, next) => {
 })
 
 // GET /locations/4/edit
-router.get('/:id/edit', (req, res) => {
-  const id = Number(req.params.id)
-
-  // TODO: Get the location based on its id and replace this viewData
-  const viewData = {
-    id: id,
-    name: 'TangleStage',
-    description:
-      'Not the biggest stage, but perhaps the most hip. Not the biggest stage, but perhaps the most hip. Not the biggest stage, but perhaps the most hip.',
-  }
-
-  res.render('editLocation', viewData)
+// TODO: Get the location based on its id and replace this viewData
+router.get('/:id/edit', async (req, res, next) => {
+  try {
+    const id = Number(req.params.id)
+    const location = await db.getLocationById(id)
+    res.render('editLocation', location)
+  } catch (e) {
+    next(e)
+  } 
 })
 
 // POST /locations/edit
