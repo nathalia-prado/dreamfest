@@ -18,12 +18,35 @@ export async function getAllLocations(): Promise<Location[]> {
   }
 }
   
-export async function getEventsByDay(day:string): Promise<Event[]>  {
+export async function getEventsByDay(day:string): Promise<EventWithLocation[]>  {
   try {
     return db('events')
-      .join('locations', 'events.location_id', 'locations.id')
+      .join('locations', 'locations.id', 'events.location_id')
+      .select(
+        'events.id as id',
+        'day',
+        'time',
+        'events.name as eventName',
+        'events.description',
+        'locations.name as locationName'
+      )
       .where('events.day', day)
-      .select()
+  } catch (err: any) {
+    console.log(err.message)
+    return err.message
+  }
+}
+
+export async function addNewEvent(eventData:EventData): Promise<Event>  {
+  try {
+    return db('events')
+      .insert({
+        location_id: eventData.locationId,
+        day: eventData.day,
+        time: eventData.time,
+        name: eventData.name,
+        description: eventData.description
+      })
   } catch (err: any) {
     console.log(err.message)
     return err.message
@@ -52,10 +75,3 @@ export async function updateLocation(updatedLocation:Location): Promise<number> 
     return err.message
   }
 }
-
-
-
-  // TODO: use knex to get the real location data from the database
-
-
-// TODO: write some more database functions

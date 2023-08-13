@@ -2,6 +2,7 @@ import express from 'express'
 
 import { eventDays, capitalise, validateDay } from './helpers.ts'
 import * as db from '../db/index.ts'
+import type { EventData } from '../../models/Event.ts'
 
 const router = express.Router()
 export default router
@@ -20,14 +21,19 @@ router.get('/add/:day', async (req, res) => {
 })
 
 // POST /events/add
-router.post('/add', (req, res) => {
-  // ASSISTANCE: So you know what's being posted ;)
-  // const { name, description, time, locationId } = req.body
-  // const day = validateDay(req.body.day)
+router.post('/add', async (req, res) => {
+  const { name, description, time, locationId } = req.body
+  const day = validateDay(req.body.day)
 
-  // TODO: Add the event to the database and then redirect
+  const newEvent = {
+    name,
+    locationId,
+    day,
+    time,
+    description
+  }
 
-  const day = 'friday' // TODO: Remove this line
+  await db.addNewEvent(<EventData>(newEvent))
 
   res.redirect(`/schedule/${day}`)
 })
