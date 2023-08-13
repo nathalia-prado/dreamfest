@@ -37,7 +37,7 @@ export async function getEventsByDay(day:string): Promise<EventWithLocation[]>  
   }
 }
 
-export async function addNewEvent(eventData:EventData): Promise<Event>  {
+export async function addNewEvent(eventData:EventData): Promise<number>  {
   try {
     return db('events')
       .insert({
@@ -47,6 +47,15 @@ export async function addNewEvent(eventData:EventData): Promise<Event>  {
         name: eventData.name,
         description: eventData.description
       })
+  } catch (err: any) {
+    console.log(err.message)
+    return err.message
+  }
+}
+
+export async function deleteEvent(id: number): Promise<number> {
+  try {
+    return db('events').where('id', id).del()
   } catch (err: any) {
     console.log(err.message)
     return err.message
