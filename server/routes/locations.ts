@@ -1,14 +1,13 @@
 import express from 'express'
 
-import * as db from '../db/index.ts'
+import { getAllLocations, getLocationById, updateLocation } from '../db/locationDb.ts'
 
 const router = express.Router()
 
-// GET /locations
-// TODO: Replace this with all of the locations in the database
+// Show all locations
 router.get('/', async (req, res, next) => {
   try {
-    const locations = await db.getAllLocations()
+    const locations = await getAllLocations()
     const viewData = { locations }  
     res.render('showLocations', viewData)
   } catch (e) {
@@ -16,26 +15,21 @@ router.get('/', async (req, res, next) => {
   }    
 })
 
-// GET /locations/4/edit
-// TODO: Get the location based on its id and replace this viewData
+// Render edit location page
 router.get('/:id/edit', async (req, res, next) => {
   try {
     const id = Number(req.params.id)
-    const location = await db.getLocationById(id)
+    const location = await getLocationById(id)
     res.render('editLocation', location)
   } catch (e) {
     next(e)
   } 
 })
 
-// POST /locations/edit
-// ASSISTANCE: So you know what's being posted ;)
-// const { id, name, description } = req.body
-
-// TODO: Update the location in the database based on its id
+// Submit the edited location
 router.post('/edit', async (req, res, next) => {
   try {
-    await db.updateLocation(req.body)
+    await updateLocation(req.body)
   } catch (e) {
     next(e)
   }

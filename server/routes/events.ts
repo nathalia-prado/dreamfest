@@ -1,13 +1,14 @@
 import express from 'express'
 
 import { eventDays, capitalise, validateDay } from './helpers.ts'
-import * as db from '../db/index.ts'
+import { addNewEvent, deleteEvent, getEventById } from '../db/eventDb.ts'
+import { getAllLocationsForDropdown } from '../db/locationDb.ts'
 import type { EventData } from '../../models/Event.ts'
 
 const router = express.Router()
 export default router
 
-// GET /events/add/friday
+// Render add event page to a specific day
 router.get('/add/:day', async (req, res) => {
   const day = validateDay(req.params.day)
   const days = eventDays.map((eventDay) => ({
@@ -15,12 +16,12 @@ router.get('/add/:day', async (req, res) => {
     name: capitalise(eventDay),
     selected: eventDay === day ? 'selected' : '',
   }))
-  const locations = await db.getAllLocations()
+  const locations = await getAllLocationsForDropdown()
   const viewData = { locations, days, day }
   res.render('addEvent', viewData)
 })
 
-// POST /events/add
+// Add event route
 router.post('/add', async (req, res) => {
   const { name, description, time, locationId } = req.body
   const day = validateDay(req.body.day)
@@ -33,49 +34,30 @@ router.post('/add', async (req, res) => {
     description
   }
 
-  await db.addNewEvent(<EventData>(newEvent))
+  await addNewEvent(<EventData>(newEvent))
 
   res.redirect(`/schedule/${day}`)
 })
 
-// POST /events/delete
+// Remove event route
 router.post('/delete', async (req, res) => {
   const id = Number(req.body.id)
-  await db.deleteEvent(id)
+  await deleteEvent(id)
 
   const day = validateDay(req.body.day)
 
   res.redirect(`/schedule/${day}`)
 })
 
-// GET /events/3/edit
-router.get('/:id/edit', (req, res) => {
+// Render edit event page
+router.get('/:id/edit', async (req, res) => {
   const id = Number(req.params.id)
 
-  // TODO: Replace event below with the event from the database using its id
-  // NOTE: It should have the same shape as this one
-  const event = {
-    id: id,
-    locationId: 1,
-    day: 'friday',
-    time: '2pm - 3pm',
-    name: 'Slushie Apocalypse I',
-    description:
-      'This is totally a description of this really awesome event that will be taking place during this festival at the Yella Yurt. Be sure to not miss the free slushies cause they are rad!',
-  }
+  const event = await getEventById(id)
 
-  // TODO: Replace locations below with all of the locations from the database
-  // NOTE: The objects should have the same shape as these.
-  // The selected property should have a value of
-  // either 'selected' or '' based on event.locationId above.
-  const locations = [
-    { id: 1, name: 'TangleStage', selected: '' },
-    { id: 2, name: 'Yella Yurt', selected: 'selected' },
-    { id: 3, name: 'Puffy Paddock', selected: '' },
-    { id: 4, name: 'Kombucha Karavan', selected: '' },
-  ]
+  const locationsData = await getAllLocationsForDropdown()
+  const locations = locationsData.map((location) => ({...location, selected: event && event.locationId == location.id ? 'selected' : ''}))
 
-  // This is done for you with an array of days imported from the helpers file
   const days = eventDays.map((eventDay) => ({
     value: eventDay,
     name: capitalise(eventDay),
@@ -86,7 +68,7 @@ router.get('/:id/edit', (req, res) => {
   res.render('editEvent', viewData)
 })
 
-// POST /events/edit
+// TODO: STRETCH
 router.post('/edit', (req, res) => {
   // ASSISTANCE: So you know what's being posted ;)
   // const { name, description, time } = req.body

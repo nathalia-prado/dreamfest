@@ -1,22 +1,7 @@
-import knexFile from './knexfile.js'
-import knex from 'knex'
-import type { Location, LocationData } from '../../models/Location.ts'
-import type { Event, EventData, EventWithLocation } from '../../models/Event.ts'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { Event, EventData, EventWithLocation } from '../../models/Event.js'
 
-type Environment = 'production' | 'test' | 'development'
-
-const environment = (process.env.NODE_ENV || 'development') as Environment
-const config = knexFile[environment]
-const db = knex.default(config)
-
-export async function getAllLocations(): Promise<Location[]> {
-  try {
-    return db('locations').select()
-  } catch (err: any) {
-    console.log(err.message)
-    return err.message
-  }
-}
+import db from './connection.js'
   
 export async function getEventsByDay(day:string): Promise<EventWithLocation[]>  {
   try {
@@ -62,23 +47,19 @@ export async function deleteEvent(id: number): Promise<number> {
   }
 }
 
-export async function getLocationById(id:number): Promise<Location>  {
+export async function getEventById(id:number): Promise<Event>  {
   try {
-    return db('locations')
-      .where('locations.id', id)
+    return db('events')
+      .select(
+        'id',
+        'day',
+        'time',
+        'name',
+        'description',
+        'location_id as locationId'
+      )
+      .where('id', id)
       .first()
-  } catch (err: any) {
-    console.log(err.message)
-    return err.message
-  }
-}
-
-export async function updateLocation(updatedLocation:Location): Promise<number>  {
-  try {
-    return db('locations')
-      .returning(['id', 'name', 'description'])
-      .update({...updatedLocation})
-      .where('id', updatedLocation.id)
   } catch (err: any) {
     console.log(err.message)
     return err.message
