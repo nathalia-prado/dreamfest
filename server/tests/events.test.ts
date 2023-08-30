@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
 import request from 'supertest'
-import { JSDOM } from 'jsdom'
 import server from '../server.js'
 import * as db from '../db/eventDb.ts'
 import { getAllLocationsForDropdown } from '../db/locationDb.ts'
+import { render } from '../tests/utils/test-utils.ts'
 
 vi.mock('../db/eventDb.js')
 vi.mock('../db/locationDb.js')
@@ -33,18 +33,41 @@ describe('the edit event route', () => {
     expect(db.getEventById).toHaveBeenCalledWith(3)
     expect(getAllLocationsForDropdown).toHaveBeenCalled()
 
-    const dom = new JSDOM(res.text).window.document.body
-    expect(dom.getElementsByTagName('h2')).toMatchInlineSnapshot(`
-      HTMLCollection [
-        <h2>
-          edit event: 
-          <span
-            class="data"
-          >
-            Sandwich Eating Contest
-          </span>
-        </h2>,
+    const screen = render(res)
+    const heading = screen.getByRole('heading', { level: 2 })
+    expect(heading).toMatchInlineSnapshot(`
+      <h2>
+        edit event: 
+        <span
+          class="data"
+        >
+          Sandwich Eating Contest
+        </span>
+      </h2>
+    `)
+  })
+})
+
+describe('the add event route', () => {
+  it('show the add event page', async () => {
+
+    vi.mocked(getAllLocationsForDropdown).mockImplementation(async () => {
+      return [
+        { id: 1, name: 'TangleStage a' },
+        { id: 2, name: 'Yella Yurt' }
       ]
+    })
+
+    const res = await request(server).get('/events/add/friday')
+    expect(res.statusCode).toBe(200)
+    expect(getAllLocationsForDropdown).toHaveBeenCalled()
+
+    const screen = render(res)
+    const heading = screen.getByRole('heading', { level: 2 })
+    expect(heading).toMatchInlineSnapshot(`
+      <h2>
+        add new event
+      </h2>
     `)
   })
 })
